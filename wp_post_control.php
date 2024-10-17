@@ -20,8 +20,6 @@ Text Domain: wp_post_control
 
 */
 
-
-
 function restrict_user_categories(){
 	$exclusions = '';
 	$categories = get_categories();
@@ -80,8 +78,8 @@ function add_category_restrictions_to_user_panel($user){
 																									 
 	echo $output;
 }
-
 add_action('edit_user_profile', 'add_category_restrictions_to_user_panel');
+
 
 function save_category_restrictions_to_user_panel($user_id){
 	$allowed_categories = array();
@@ -132,39 +130,39 @@ function default_category_for_users($default_category, $post) {
 //add_filter( 'default_category', 'default_category_for_users', 10, 2 ); //Not currently working as expected
 
 
-    function send_mail_on_post_publish($post_id, $post){
+function send_mail_on_post_publish($post_id, $post){
 	if(strpos($_SERVER['HTTP_REFERRER'], 'edit-question') !== false) {
 		//Action to perform if post edited
 	}
 	else {
-			$headers = 'From: "From Name <from@email.com>' . "\r\n" . 'Reply-To: from@email.com' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-			$headers .= "Content-Transfer-Encoding: 8bit\n";
-			$headers .= "Content-Type: text/html; charset=UTF-8\n";
-			$headers .= 'MIME-Version: 1.0' . "\r\n";
-			
-			$to = 'to@email.com';
-			$subject = '[TAG]' . $post->post_title;
-			$post_content = apply_filters('the_content',$post->post_content);
-			$post_content = wp_kses_post($post_content);
+		$headers = 'From: "From Name <from@email.com>' . "\r\n" . 'Reply-To: from@email.com' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+		$headers .= "Content-Transfer-Encoding: 8bit\n";
+		$headers .= "Content-Type: text/html; charset=UTF-8\n";
+		$headers .= 'MIME-Version: 1.0' . "\r\n";
 		
-			$message = '
-						<html>
-						<head>
-						  <style>
-							body { font-family: Arial, sans-serif; }
-							h1 { color: #333; }
-							p { line-height: 1.6; }
-						  </style>
-						</head>
-						<body>
-						<h1>' . $post->post_title . '</h1>
-						' . get_userdata($post->post_author)->first_name . ' ' . get_userdata($post->post_author)->last_name . '<br>
-						' . $post->post_date . '<br>
-						<a href="' . get_permalink($post_id) . '">See More</a>
-						  ' . $post_content . '
-						</body></html>';
-			
-			wp_mail($to, $subject, $message, $headers);
+		$to = 'to@email.com';
+		$subject = '[TAG]' . $post->post_title;
+		$post_content = apply_filters('the_content',$post->post_content);
+		$post_content = wp_kses_post($post_content);
+	
+		$message = '
+					<html>
+					<head>
+					  <style>
+						body { font-family: Arial, sans-serif; }
+						h1 { color: #333; }
+						p { line-height: 1.6; }
+					  </style>
+					</head>
+					<body>
+					<h1>' . $post->post_title . '</h1>
+					' . get_userdata($post->post_author)->first_name . ' ' . get_userdata($post->post_author)->last_name . '<br>
+					' . $post->post_date . '<br>
+					<a href="' . get_permalink($post_id) . '">See More</a>
+					  ' . $post_content . '
+					</body></html>';
+		
+		wp_mail($to, $subject, $message, $headers);
 	
 	}
 }
