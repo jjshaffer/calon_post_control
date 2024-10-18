@@ -4,7 +4,7 @@
 
 Plugin Name: WP Post Control
 
-Plugin URI: 
+Plugin URI: https://github.com/jjshaffer/wp_post_control/
 
 Description: Plugin for user management. Allows for restricting non-administrative users posts to specific categories.
 
