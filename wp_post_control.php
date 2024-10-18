@@ -20,10 +20,6 @@ Text Domain: wp_post_control
 
 */
 
-
-
-
-
 function restrict_user_categories() { 
 	$exclusions = '';
 	$user_string = get_user_meta(get_current_user_id(), 'allowed_categories', TRUE);
@@ -99,7 +95,56 @@ function save_category_restrictions_to_user_panel($user_id){
 	}
 }
 add_action('profile_update', 'save_category_restrictions_to_user_panel', 10, 2);
+
+function add_email_settings_to_categories_edit_panel($term){
 	
+	$t_id = $term->term_id;
+ 	echo "<script>console.log('Debug Exclusions: " . $t_id . "' );</script>";
+  
+    $send_category_email = get_term_meta($term_id = $t_id, $key = 'send_category_email', TRUE);
+    $category_email = get_term_meta($term_id = $t_id, $key = 'category_email', TRUE);
+	
+	echo "<script>console.log('Debug Exclusions: " . $send_category_email . "' );</script>";
+	echo "<script>console.log('Debug Exclusions: " . $category_email . "' );</script>";
+
+	$output = '
+		<table class="form-table">
+		<tr><td><h2>Email Settings</h2></td></tr>';
+	if($send_category_email){
+	$output .= '<tr><td><label for="send_category_email">Send Email on Publish</label></td><td><select name="send_category_email" id="send_category_email">
+  		<option value="0">No</option>
+  		<option selected value="1">Yes</option>
+		</select></td>';
+	}
+	else {
+		$output .= '<tr><td><label for="send_category_email">Send Email on Publish</label></td><td><select name="send_category_email" id="send_category_email">
+  		<option selected value="0">No</option>
+  		<option value="1">Yes</option>
+		</select></td>';
+	}
+	
+	$output .= '<tr><td><label for="category_email">Send to Email</label></td><td><input type="email" id="category_email" name="category_email" value="' . $category_email . '"></td></tr>';
+	$output .='</table><br>';
+																									 
+	echo $output;
+}
+add_action('category_edit_form_fields', 'add_email_settings_to_categories_edit_panel', 10, 2);
+add_action('category_add_form_fields', 'add_email_settings_to_categories_edit_panel', 10, 2);
+
+function save_email_settings_to_categories_panel($term_id){
+	$t_id = $term_id;
+	if (isset( $_POST['send_category_email'] ) && in_array($_POST['send_category_email'], array(0,1)) ) {
+      update_term_meta($term_id = $t_id, $meta_key = 'send_category_email', $meta_value = $_POST['send_category_email']);
+    }
+	
+	if (isset( $_POST['category_email'] ) && !is_null($_POST['category_email']) ) {
+        $email = sanitize_text_field($_POST['category_email']);
+		update_term_meta($term_id = $t_id, $meta_key = 'category_email', $meta_value = $email);
+    }
+}
+add_action('edited_category', 'save_email_settings_to_categories_panel', 10, 2);
+add_action('create_category', 'save_email_settings_to_categories_panel', 10, 2);
+
 
 function force_category_for_users($post_id, $post) {
 	$user_category = array(11); //Retrieve this from wherever you want. The number references wp_term_taxonomy.term_taxonomy_id for the appropriate category
