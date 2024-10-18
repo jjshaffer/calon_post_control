@@ -20,6 +20,25 @@ Text Domain: wp_post_control
 
 */
 
+
+
+function restrict_user_categories2() { 
+
+	$exclusions = '';
+	$user_string = get_user_meta(get_current_user_id(), 'allowed_categories', TRUE);
+	
+	$user_string="9,10";
+	echo "<script>console.log('Debug Exclusions: " . $user_string . "' );</script>";
+	
+	if($user_string != ""){
+		$exclusions = ' AND t.term_id NOT IN (' . $user_string . ')';
+
+	}    
+	echo "<script>console.log('Debug Exclusions: " . $exclusions . "' );</script>";
+	return $exclusions;	
+}
+add_filter('list_terms_exclusions', 'restrict_user_categories2', 10);
+
 function restrict_user_categories(){
 	$exclusions = '';
 	$categories = get_categories();
