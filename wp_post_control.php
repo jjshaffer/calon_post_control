@@ -22,48 +22,22 @@ Text Domain: wp_post_control
 
 
 
-function restrict_user_categories2() { 
 
+
+function restrict_user_categories() { 
 	$exclusions = '';
 	$user_string = get_user_meta(get_current_user_id(), 'allowed_categories', TRUE);
-	
-	$user_string="9,10";
-	echo "<script>console.log('Debug Exclusions: " . $user_string . "' );</script>";
+	//echo "<script>console.log('Debug Exclusions2: " . $user_string . "' );</script>";
 	
 	if($user_string != ""){
-		$exclusions = ' AND t.term_id NOT IN (' . $user_string . ')';
-
+		if (!in_array('administrator',  wp_get_current_user()->roles)) {
+			$exclusions = ' AND t.term_id IN (' . $user_string . ')';
+		}
 	}    
-	echo "<script>console.log('Debug Exclusions: " . $exclusions . "' );</script>";
+	//echo "<script>console.log('Debug Exclusions: " . $exclusions . "' );</script>";
 	return $exclusions;	
 }
-add_filter('list_terms_exclusions', 'restrict_user_categories2', 10);
-
-function restrict_user_categories(){
-	$exclusions = '';
-	$categories = get_categories();
-	$user_string = get_user_meta(get_current_user_id(), 'allowed_categories', TRUE);
-	$user_categories = explode(',', $user_string);
-	
-	//If this allowed_categories field is empty or does not exist, then no exclusions
-	if($user_string === ""){
-		return $exclusions;
-	}
-	//Otherwise compare available categories with set of allowed categories. Exclude categories not in user_categories.
-	$cat_exclude = array_diff($categories, $user_categories); 
-	 if (!in_array('administrator',  wp_get_current_user()->roles)) {
-		 if(!empty($cat_exclude)){
-			$exclusions .= ' AND t.term_id NOT IN (';
-			foreach($cat_exclude as $exclude) {
-				$exclusions .= $exclude.',';
-			}
-			$exclusions = substr($exclusions, 0, -1); // Removing the last comma
-        	$exclusions .= ')';
-		 }
-    }
-	return $exclusions;	
-}
-add_filter( 'list_terms_exclusions', 'restrict_user_categories', 20 );
+add_filter('list_terms_exclusions', 'restrict_user_categories', 10);
 
 
 function add_category_restrictions_to_user_panel($user){
@@ -97,7 +71,9 @@ function add_category_restrictions_to_user_panel($user){
 																									 
 	echo $output;
 }
-add_action('edit_user_profile', 'add_category_restrictions_to_user_panel');
+add_action('edit_user_profile', 'add_category_restrictions_to_user_panel', 10, 2);
+
+
 
 
 function save_category_restrictions_to_user_panel($user_id){
@@ -122,7 +98,7 @@ function save_category_restrictions_to_user_panel($user_id){
     	update_user_meta( $user_id, 'allowed_categories', implode(',', $allowed_categories) );
 	}
 }
-add_action('profile_update', 'save_category_restrictions_to_user_panel');
+add_action('profile_update', 'save_category_restrictions_to_user_panel', 10, 2);
 	
 
 function force_category_for_users($post_id, $post) {
