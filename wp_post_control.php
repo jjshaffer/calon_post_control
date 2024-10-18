@@ -171,17 +171,51 @@ function default_category_for_users($default_category, $post) {
 
 
 function send_mail_on_post_publish($post_id, $post){
+	$categories = wp_get_post_categories($post_id);
+	
+	
+	$emails = '';
+	$first_cat = '';
+	foreach($categories as $category){
+		$cat = get_category($category);
+		
+		if ($first_cat === ""){
+			$first_cat = $cat->name;
+		}
+		$send_category_email = get_term_meta($term_id = $category, $key = 'send_category_email', TRUE);
+    	$category_email = get_term_meta($term_id = $category, $key = 'category_email', TRUE);
+		
+		if($send_category_email){
+			$emails .= $category_email . ',';
+		}
+	}
+	
+		
 	if(strpos($_SERVER['HTTP_REFERRER'], 'edit-question') !== false) {
 		//Action to perform if post edited
+		return;
+	}
+	elseif(wp_is_post_revision( $post)){
+		return;
+	}
+	elseif(wp_is_post_autosave( $post)){
+		return;
 	}
 	else {
-		$headers = 'From: "From Name <from@email.com>' . "\r\n" . 'Reply-To: from@email.com' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+		//$headers = 'From: "From Name <from@email.com>' . "\r\n" . 'Reply-To: from@email.com' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+		$headers = 'X-Mailer: PHP/' . phpversion();
 		$headers .= "Content-Transfer-Encoding: 8bit\n";
 		$headers .= "Content-Type: text/html; charset=UTF-8\n";
 		$headers .= 'MIME-Version: 1.0' . "\r\n";
 		
-		$to = 'to@email.com';
-		$subject = '[TAG]' . $post->post_title;
+		$to = $emails;
+		if($first_cat != ""){
+			$subject = '[' . $first_cat . '] ' . $post->post_title;
+		}
+		else{
+			$subject = $post->post_title;
+		}
+		
 		$post_content = apply_filters('the_content',$post->post_content);
 		$post_content = wp_kses_post($post_content);
 	
@@ -203,7 +237,9 @@ function send_mail_on_post_publish($post_id, $post){
 					</body></html>';
 		
 		wp_mail($to, $subject, $message, $headers);
+		//die();
 	
 	}
+	
 }
-//add_action( 'publish_post', 'send_mail_on_post_publish', 10, 3 );
+add_action( 'publish_post', 'send_mail_on_post_publish', 10, 3 );
