@@ -236,8 +236,11 @@ function send_mail_on_post_publish($post_id, $post){
 					  ' . $post_content . '
 					</body></html>';
 		
-		wp_mail($to, $subject, $message, $headers);
-		//die();
+		$key='_post_counted';
+		if(! filter_var(get_post_meta($post_id, $key, true), FILTER_VALIDATE_BOOLEAN)){
+			wp_mail($to, $subject, $message, $headers);
+			update_post_meta($post_id, $key, true);
+		}
 	
 	}
 	
