@@ -2,7 +2,7 @@
 
 /*
 
-Plugin Name: WP Post Control
+Plugin Name: CALON Post Control
 
 Plugin URI: https://github.com/jjshaffer/wp_post_control/
 
@@ -16,7 +16,7 @@ Author URI:
 
 License: BSD 3.0
 
-Text Domain: wp_post_control
+Text Domain: calon_post_control
 
 */
 
