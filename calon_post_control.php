@@ -4,7 +4,7 @@
 
 Plugin Name: CALON Post Control
 
-Plugin URI: https://github.com/jjshaffer/wp_post_control/
+Plugin URI: https://github.com/jjshaffer/calon_post_control/
 
 Description: Plugin for user management. Allows for restricting non-administrative users posts to specific categories.
 
