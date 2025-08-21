@@ -53,7 +53,7 @@ function add_category_restrictions_to_user_panel($user){
 			
 			if ($user_string === ""){
 				
-				$output .= '<tr><td><input type="checkbox" id="' . $category->term_id . '_' . $category->name . '" name="allowedFormCheckbox[]" value="' . $category->term_id .'" >' . $category->name .'</td></tr>';
+				$output .= '<tr><td><input type="checkbox" id="' . $category->term_id . '_' . $category->name . '" name="allowedFormCheckbox[]" value="' . $category->term_id .'">' . $category->name .'</td></tr>';
 			}
 			elseif (in_array($category->term_id,$user_categories)){
 				$output .= '<tr><td><input type="checkbox" id="' . $category->term_id . '_' . $category->name . '" name="allowedFormCheckbox[]" value="' . $category->term_id .'" checked>' . $category->name .'</td></tr>';
@@ -83,18 +83,27 @@ function save_category_restrictions_to_user_panel($user_id){
         return false; 
     }
 	
-	$checkboxes = $_POST['allowedFormCheckbox'];
+	$checkboxes = array();
+	if (isset($_POST['allowedFormCheckbox'])) {
+		$checkboxes = $_POST['allowedFormCheckbox'];
+	}
 	
 	$N = count($checkboxes);
 	for($i=0; $i < $N; $i++){
 		array_push($allowed_categories, $checkboxes[$i]);
 	}
+
 	
 	if($allowed_categories){
-    	update_user_meta( $user_id, 'allowed_categories', implode(',', $allowed_categories) );
+    	update_user_meta($user_id, 'allowed_categories', implode(',', $allowed_categories) );
 	}
+	else {
+		update_user_meta($user_id, 'allowed_categories', '');
+	}
+	
 }
 add_action('profile_update', 'save_category_restrictions_to_user_panel', 10, 2);
+
 
 function add_email_settings_to_categories_edit_panel($term){
 	
@@ -104,8 +113,8 @@ function add_email_settings_to_categories_edit_panel($term){
     $send_category_email = get_term_meta($term_id = $t_id, $key = 'send_category_email', TRUE);
     $category_email = get_term_meta($term_id = $t_id, $key = 'category_email', TRUE);
 	
-	echo "<script>console.log('Debug Exclusions: " . $send_category_email . "' );</script>";
-	echo "<script>console.log('Debug Exclusions: " . $category_email . "' );</script>";
+	//echo "<script>console.log('Debug Exclusions: " . $send_category_email . "' );</script>";
+	//echo "<script>console.log('Debug Exclusions: " . $category_email . "' );</script>";
 
 	$output = '
 		<table class="form-table">
