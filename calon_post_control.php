@@ -107,7 +107,7 @@ function calon_pc_add_email_settings_to_categories_edit_panel($term){
 add_action('category_edit_form_fields', 'calon_pc_add_email_settings_to_categories_edit_panel', 10, 2);
 add_action('category_add_form_fields', 'calon_pc_add_email_settings_to_categories_edit_panel', 10, 2);
 
-function save_email_settings_to_categories_panel($term_id){
+function calon_pc_save_email_settings_to_categories_panel($term_id){
 	$t_id = $term_id;
 	if (isset( $_POST['calon_pc_send_category_email'] ) && in_array($_POST['calon_pc_send_category_email'], array(0,1)) ) {
       update_term_meta($term_id = $t_id, $meta_key = 'calon_pc_send_category_email', $meta_value = $_POST['calon_pc_send_category_email']);
