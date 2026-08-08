@@ -11,20 +11,64 @@ License: BSD 3.0
 Text Domain: calon_post_control
 */
 
-function calon_pc_restrict_user_categories() { 
-	$exclusions = '';
-	$user_string = get_user_meta(get_current_user_id(), 'calon_pc_allowed_categories', TRUE);
-	//echo "<script>console.log('Debug Exclusions2: " . $user_string . "' );</script>";
+function calon_pc_restrict_user_categories($args) { 
 	
-	if($user_string != ""){
-		if (!in_array('administrator',  wp_get_current_user()->roles)) {
-			$exclusions = ' AND t.term_id IN (' . $user_string . ')';
-		}
-	}    
-	//echo "<script>console.log('Debug Exclusions: " . $exclusions . "' );</script>";
-	return $exclusions;	
+    // Don't restrict administrators.
+    if (in_array('administrator',  wp_get_current_user()->roles)) {
+        return $args;
+    }
+    $user_id = get_current_user_id();
+
+    if (!$user_id) {
+        return $args;
+    }
+
+    $allowed = get_user_meta($user_id, 'calon_pc_allowed_categories', true);
+
+    // Convert "9,4768,1444" to [9, 4768, 1444].
+    $allowed = array_filter(array_map('intval', explode( ',', (string) $allowed )));
+
+    // No allowed categories.
+    if ( empty( $allowed ) ) {
+        $args['include'] = array(0);
+    } else {
+        $args['include'] = $allowed;
+    }
+
+    return $args;
 }
-add_filter('list_terms_exclusions', 'calon_pc_restrict_user_categories', 10);
+add_filter('rest_category_query', 'calon_pc_restrict_user_categories', 10, 1);
+
+
+function calon_restrict_categories( $args ) {
+
+    $user_id = get_current_user_id();
+
+    if ( ! $user_id ) {
+        return $args;
+    }
+
+    $allowed_categories = get_user_meta($user_id, 'calon_pc_allowed_categories', true);
+
+	$allowed_categories = array_filter(
+        array_map(
+            'intval',
+            explode( ',', $allowed_categories )
+        )
+    );
+
+ 	echo 'console.log(' . json_encode($allowed_categories) . ');';
+
+    // No allowed categories = show no categories.
+    if ( empty( $allowed_categories ) ) {
+        $args['include'] = array( 0 );
+    } else {
+        $args['include'] = $allowed_categories;
+    }
+
+    return $args;
+}
+add_filter( 'wp_terms_checklist_args', 'calon_restrict_categories', 10, 1);
 
 
 function calon_pc_add_category_restrictions_to_user_panel($user){
@@ -128,20 +172,42 @@ function calon_pc_force_category_for_users($post_id, $post) {
 		} 
 	}
 } 
-//add_action( 'publish_post', 'calon_pc_force_category_for_users', 10, 3 );
+#//add_action( 'publish_post', 'calon_pc_force_category_for_users', 5, 3 );
 
 function calon_pc_default_category_for_users($default_category, $post) {
-	$user_category = 11; //Retrieve this from wherever you want. The number references wp_term_taxonomy.term_taxonomy_id for the appropriate category
-	if (!in_array('administrator',  wp_get_current_user()->roles)) {
-		//if(!is_null($user_category)){
-       		return $user_category;
-		//}
+	/*
+	if (in_array('administrator',  wp_get_current_user()->roles)) {
+		return $default_category;
 	}
-		else{
-			return $default_category;
+	
+	$user_categories = get_user_meta($user->ID, 'calon_pc_allowed_categories', TRUE);
+	
+	if (!in_array($default_category,  $user_categories)) {
+		if($user_categories){
+       		return $user_categories[0];
 		}
+		else{
+			return 11;
+		}
+	}
+	else{
+		*/
+		return $default_category;
+	//}
 } 
-//add_filter( 'default_category', 'calon_pc_default_category_for_users', 10, 2 ); //Not currently working as expected
+#//add_filter('default_category', 'calon_pc_default_category_for_users', 10, 2 ); //Not currently working as expected
+
+function calon_pc_on_add_new_post(){
+	// Get the ID of the default category
+    $default_category_id = get_option( 'default_category' );
+
+
+	
+	
+}
+
+#//add_action( 'load-post-new.php', 'calon_pc_on_add_new_post');
+
 
 function calon_pc_send_mail_on_post_publish($post_id, $post){
 	$categories = wp_get_post_categories($post_id);
@@ -157,7 +223,12 @@ function calon_pc_send_mail_on_post_publish($post_id, $post){
 		if($send_category_email){
 			$emails .= $category_email . ',';
 		}
-	}	
+	}
+	
+	if($emails == ''){
+		return;
+	}
+	
 	if(strpos($_SERVER['HTTP_REFERRER'], 'edit-question') !== false) {
 		//Action to perform if post edited
 		return;
